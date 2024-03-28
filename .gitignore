@@ -1,0 +1,24 @@
+.DS_Store
+playground.*
+pyrightconfig.json
+env/
+.env/
+.cache/
+
+# rust stuff
+debug/
+target/
+Cargo.lock
+**/*.rs.bk
+
+# cpp/cmake stuff
+.cmake/
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
