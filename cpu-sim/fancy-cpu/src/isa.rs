@@ -99,11 +99,10 @@ impl Instruction {
         // Parse source 2
         let src2 = Self::str_to_src(tokens[3])?;
         if opcode == OP::LB || opcode == OP::LW || opcode == OP::SB || opcode == OP::SW {
-            // src2 is an offset for load/store instructions and therefore but be an immediate
-            match src2 {
-                Source::Immediate(_) => {},
-                _ => return Err("Offset must be an immediate value"),
-            }
+            // src2 is an offset for load/store instructions and therefore must be an immediate 
+            if let Source::Register(_) = src2 {
+                return Err("Offset must be an immediate value");
+            }    
         }
 
         Ok(Instruction {
