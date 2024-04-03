@@ -20,5 +20,9 @@ CMakeScripts
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
+compile_flags.txt
 CTestTestfile.cmake
 _deps
+a.out
+*.dSYM
+.gdb_history

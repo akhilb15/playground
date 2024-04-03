@@ -7,8 +7,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # set CXX path
-set(CMAKE_CXX_COMPILER /opt/homebrew/opt/llvm/bin/clang++)
-set(CMAKE_C_COMPILER /opt/homebrew/opt/llvm/bin/clang)
+# set(CMAKE_CXX_COMPILER /opt/homebrew/opt/llvm/bin/clang++)
+# set(CMAKE_C_COMPILER /opt/homebrew/opt/llvm/bin/clang)
 
 add_executable(mutex test_mutex.cpp mutex.cpp)
 
