@@ -4,16 +4,16 @@
 #[derive(PartialEq, Debug)]
 pub enum OP {
     /// add dest, src1, src2 - addition
-    ADD,  
+    ADD,
     /// sub dest, src1, src2 - subtraction
     SUB,
     /// mul dest, src1, src2 - multiplication
     MUL,
     /// div dest, src1, src2 - division
-    DIV, 
+    DIV,
     /// addf dest, src1, src2 - floating point add
     ADDF,
-    /// subf dest, src1, src2 - floating point sub 
+    /// subf dest, src1, src2 - floating point sub
     SUBF,
     /// mulf dest, src1, src2 - floating point mul
     MULF,
@@ -28,7 +28,6 @@ pub enum OP {
     /// sw src, dest, offset - store word (src1 = src, src2 = offset)
     SW,
 }
-
 
 /// Register (8 registers guaranteed by the ISA - r0 to r7)
 #[derive(Debug)]
@@ -50,7 +49,6 @@ pub enum Source {
     Immediate(i32),
 }
 
-
 /// Instruction struct
 #[derive(Debug)]
 pub struct Instruction {
@@ -60,13 +58,12 @@ pub struct Instruction {
     src2: Source,
 }
 
-
 impl Instruction {
     /// Parse a raw instruction string into an Instruction struct
     pub fn parse(raw_inst: &str) -> Result<Instruction, &'static str> {
         // convert to lowercase
         let raw_inst = raw_inst.to_lowercase();
-        
+
         // split into tokens
         let tokens: Vec<&str> = raw_inst.split_whitespace().collect();
         if tokens.len() != 4 {
@@ -77,32 +74,28 @@ impl Instruction {
         let opcode = Self::str_to_opcode(tokens[0])?;
 
         // Parse destination register
-        let dest = Self::str_to_reg(
-            if opcode == OP::SB || opcode == OP::SW {
-                // dest is the second argument for store instructions
-                tokens[2]
-            } else {
-                tokens[1]
-            }
-        )?;
+        let dest = Self::str_to_reg(if opcode == OP::SB || opcode == OP::SW {
+            // dest is the second argument for store instructions
+            tokens[2]
+        } else {
+            tokens[1]
+        })?;
 
         // Parse source 1
-        let src1 = Self::str_to_src(
-            if opcode == OP::SB || opcode == OP::SW {
-                // src is the first argument for store instructions
-                tokens[1]
-            } else {
-                tokens[2]
-            }
-        )?;
+        let src1 = Self::str_to_src(if opcode == OP::SB || opcode == OP::SW {
+            // src is the first argument for store instructions
+            tokens[1]
+        } else {
+            tokens[2]
+        })?;
 
         // Parse source 2
         let src2 = Self::str_to_src(tokens[3])?;
         if opcode == OP::LB || opcode == OP::LW || opcode == OP::SB || opcode == OP::SW {
-            // src2 is an offset for load/store instructions and therefore must be an immediate 
+            // src2 is an offset for load/store instructions and therefore must be an immediate
             if let Source::Register(_) = src2 {
                 return Err("Offset must be an immediate value");
-            }    
+            }
         }
 
         Ok(Instruction {
@@ -112,7 +105,7 @@ impl Instruction {
             src2,
         })
     }
-    
+
     /// Helper function to convert a string to an opcode (OP enum)
     fn str_to_opcode(opcode_str: &str) -> Result<OP, &'static str> {
         match opcode_str {
@@ -129,7 +122,7 @@ impl Instruction {
             "sb" => Ok(OP::SB),
             "sw" => Ok(OP::SW),
             _ => Err("Invalid opcode"),
-        } 
+        }
     }
 
     /// Helper function to convert a string to a register (ArchRegister enum)
@@ -157,4 +150,4 @@ impl Instruction {
             Err(_) => Err("Invalid source value"),
         }
     }
-}   
+}

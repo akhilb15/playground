@@ -52,19 +52,29 @@ class CacheBlock:
 
 class SetAssociativeCache:
     # each set is lru cache
-    def __init__(self, size, block_size, associativity):
+    def __init__(self, size, block_size, associativity, starting_cache=None, starting_lru: list=None):
         assert(size % (block_size * associativity) == 0)
+
         self.size = size
         self.block_size = block_size
         self.associativity = associativity
         self.num_sets = size // (block_size * associativity)
-        
-        self.cache = [[CacheBlock(0xff, [0xff] * block_size, False) for i in range(associativity)] for j in range(self.num_sets)]
+
+        if starting_cache is not None:
+            self.cache = starting_cache
+        else:
+            self.cache = [[CacheBlock(0xff, [0xff] * block_size, False) for i in range(associativity)] for j in range(self.num_sets)]
+
         self.hits = 0
         self.misses = 0
 
         # create lru list for each set
-        self.lru = [[i for i in range(associativity)] for j in range(self.num_sets)]
+        if starting_lru is not None:
+            self.lru = starting_lru
+        else:
+            self.lru = [[i for i in range(associativity)] for j in range(self.num_sets)]
+        
+        self.seen = set([(bl.tag, idx) for idx, cache_set in enumerate(self.cache) for bl in cache_set if bl.valid])
 
     def read(self, address):
         offset = address % self.block_size
@@ -86,16 +96,17 @@ class SetAssociativeCache:
         
         self.misses += 1
         # print type of miss
-        
+        # cold miss - if the block has never been accessed
+        if (tag, index) not in self.seen:
+            print("READ {} : COLD MISS".format(hex(address)))
         # capacity miss - if the entire cache is full
-        if all([block.valid for cache_set in self.cache for block in cache_set]):
+        elif all([block.valid for cache_set in self.cache for block in cache_set]):
             print("READ {} : CAPACITY MISS".format(hex(address)))
         # conflict miss - cache set is full       
-        elif all([block.valid for block in self.cache[index]]):
-            print("READ {} : CONFLICT MISS".format(hex(address)))
-        # compulsory/cold miss - first time access
         else:
-            print("READ {} : COMPULSORY MISS".format(hex(address)))
+            print("READ {} : CONFLICT MISS".format(hex(address)))
+
+        self.seen.add((tag, index))
 
         lru_block = self.lru[index].pop(0)
         
@@ -157,19 +168,43 @@ BLOCK_SIZE = 16
 ASSOCIATIVITY = 4
 
 if __name__ == "__main__":
-    cache = SetAssociativeCache(CACHE_SIZE, BLOCK_SIZE, ASSOCIATIVITY)
+
+    
+    # EMPTY tag=0x00 EMPTY EMPTY
+    # EMPTY EMPTY tag=0x1f EMPTY
+    
+    starting_cache = [[CacheBlock(0xff, [0xff] * BLOCK_SIZE, False) for i in range(ASSOCIATIVITY)] for j in range(CACHE_SIZE // (BLOCK_SIZE * ASSOCIATIVITY))]
+    starting_cache[0][1] = CacheBlock(0x00, [0x00] * BLOCK_SIZE, True)
+    starting_cache[1][2] = CacheBlock(0x1f, [0x1f] * BLOCK_SIZE, True)
+
+    starting_lru = [
+        [0, 2, 3, 1],
+        [0, 1, 3, 2],
+    ]
+    
+
+    cache = SetAssociativeCache(CACHE_SIZE, BLOCK_SIZE, ASSOCIATIVITY, starting_cache, starting_lru)
+   
+    
+
+
 
     addresses = [0x103, 0x383, 0x3f0, 0x2ae, 0x203, 0x02b, 0x000, 0x123, 0x208, 0x300, 0x02b, 0x103]
 
     print(cache)
 
     for addr in addresses:
+        print('-' * 50)
+
         print_cache_location(addr, CACHE_SIZE, BLOCK_SIZE, ASSOCIATIVITY)
         print('')
         cache.read(addr)
         print('')
         print(cache)
         print('')
+
+        print('-' * 50)
+
         breakpoint()
         
         # print_cache_location(addr, CACHE_SIZE, BLOCK_SIZE, ASSOCIATIVITY)
