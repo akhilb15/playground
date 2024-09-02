@@ -14,7 +14,6 @@
 #include <stdatomic.h>
 #include <pthread.h>
 #include <sys/syscall.h>
-#include <linux/futex.h>
 #include <unistd.h>
 
 
@@ -49,22 +48,6 @@ int mutex_acquire(mutex_t *m);
  */
 int mutex_release(mutex_t *m);
 
-
-/**
- * @brief wrapper for the futex system call
- * 
- * @param uaddr - pointer to the futex
- * @param futex_op - operation to be performed
- * @param val - value to be compared
- * @param timeout - timeout value
- * @param uaddr2 - pointer to the second futex
- * @param val3 - value to be compared with the second futex
- *
- * @return int - return value of the futex system call
- */
-static int futex(uint32_t *uaddr, int futex_op, uint32_t val, const struct timespec *timeout, uint32_t *uaddr2, uint32_t val3) {
-    return syscall(SYS_futex, uaddr, futex_op, val, timeout, uaddr2, val3);
-}
 
 
 #endif /* __MUTEX_H__ */

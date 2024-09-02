@@ -16,8 +16,8 @@
 void Mutex::acquire() {
     //while (locked.test_and_set(std::memory_order_acquire)) {
     while (locked.test_and_set()) { // uses std::memory_order_seq_cst by default
-        // std::this_thread::yield();
-        locked.wait(LOCKED);
+        std::this_thread::yield();
+        // locked.wait(LOCKED);
     }
     owner = std::this_thread::get_id();
 }
@@ -29,5 +29,5 @@ void Mutex::release() {
     owner = UNASSIGNED;
     //locked.clear(std::memory_order_release);
     locked.clear();
-    locked.notify_one(); // wake up a waiting thread
+    // locked.notify_one(); // wake up a waiting thread
 }

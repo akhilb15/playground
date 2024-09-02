@@ -1,5 +1,6 @@
 .DS_Store
 playground.*
+sandbox/
 pyrightconfig.json
 env/
 .env/
@@ -26,3 +27,6 @@ _deps
 a.out
 *.dSYM
 .gdb_history
+
+# zig stuff
+.zig-cache
